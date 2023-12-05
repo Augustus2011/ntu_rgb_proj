@@ -2,7 +2,7 @@
 
 ## members
 1.Worawit Tepsan
-2.Pitiwat Lueangwitchajaroen
+<a href='https://github.com/PitiwatL'> 2.Pitiwat Lueangwitchajaroen <a/>
 3.Kun kerdthausing
 
 ## advisors
