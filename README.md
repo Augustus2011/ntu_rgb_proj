@@ -5,7 +5,7 @@
 ```bash
 #to gen spectogram you need to run
 ntu_rgb/run.py
-before run you need to change confix first
+before run you need to change config first
 
 
 from gen_spec import GenSpec
