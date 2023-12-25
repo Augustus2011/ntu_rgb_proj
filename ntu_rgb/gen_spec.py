@@ -35,12 +35,16 @@ class GenSpec:
     def get_two_angle(self, x1, y1, z1, x2, y2, z2) -> float:
         denominator = (math.sqrt(x1**2 + y1**2 + z1**2) * math.sqrt(x2**2 + y2**2 + z2**2))
         if denominator == 0:
-            return 0
+            return 0.00
         else:
-            numerator = (x1 * x2) + (y1 * y2) + (z1 * z2)
-            res = numerator / denominator
-            res2 = math.acos(res) * (180 / math.pi)
-            return res2
+            try:
+                numerator = (x1 * x2) + (y1 * y2) + (z1 * z2)
+                res = numerator / denominator
+                res2 = math.acos(res) * (180 / math.pi)
+                return res2 
+            except:
+                print("math domain error")
+                return 0.00
         
     def get_zone(self,joint)->int:
         for j in range(1,6):
@@ -126,6 +130,10 @@ class GenSpec:
 
     def run_all(self, gen_type:int):
         # gen spectogram and collect dataframes
+        gen_both=None
+        gen_spec=None
+        gen_table=None
+
         if gen_type==0:
             gen_both=True
 
@@ -135,7 +143,7 @@ class GenSpec:
         elif gen_type==2:
             gen_spec=True
 
-        if gen_both==True:
+        elif gen_both==True:
             gen_table=True
             gen_spec=True
         dfs = []
