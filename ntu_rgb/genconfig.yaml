@@ -6,4 +6,4 @@ drop_col: None #example drop_col=["x","y","z"]  #all feature x,y,z,frame,joint,z
 
 
 
-gen_type: 1 #0:genboth, 1:gentable, 2:genspec, 3:gen_spec_from_exist_table
+gen_type: 0 #0:genboth, 1:gentable, 2:genspec, 3:gen_spec_from_exist_table
