@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import glob
@@ -16,6 +15,7 @@ class GenSpec:
                 (2, 1), (1, 17),
                 (13, 14), (14, 15), (15, 16),(16,15),
                 (17, 18), (18, 19), (19, 20),(20,19)]
+        
         self.zones={1:[25,24,12,11,10,9],2:[20,19,18,17],3:[16,15,14,13],4:[23,22,8,7,6,5],5:[1,2,21,3,4]}
 
         for start, end in self.hop_1_pairs:
@@ -102,7 +102,7 @@ class GenSpec:
             'z': pos_z
             })
 
-        # Add 'zone' column explicitly
+        # Add 'zone' column 
         df_movement1 = df_movement1.with_columns(pl.Series(name='zone',values=df_movement1['joint'].apply(lambda joint: self.get_zone(joint))))
         df_movement1 = df_movement1.with_columns(df_movement1.map_rows(lambda row:self.get_dis(row[2], row[3], row[4])))
         df_movement1= df_movement1.rename({"map": "dis_from_00"})
@@ -113,18 +113,31 @@ class GenSpec:
         if drop_col is not None:
             df = df.drop(columns=drop_col)
 
-        df=df.drop("file_path")
-        data_matrix = df.to_numpy().T
+        data_matrix=df.drop("file_path")
+        data_matrix = data_matrix.to_numpy().T
 
         fig, ax = plt.subplots(figsize=(8, 8))
         im = ax.imshow(data_matrix, cmap='viridis', aspect='auto')
+        del data_matrix
         ax.axis('off')
+
         fig.set_size_inches(448 / dpi, 448 / dpi)
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
-
-    def run_all(self, exist_dataframe=None, gen_spec=None):
+    def run_all(self, gen_type:int):
         # gen spectogram and collect dataframes
+        if gen_type==0:
+            gen_both=True
+
+        elif gen_type==1:
+            gen_table=True
+
+        elif gen_type==2:
+            gen_spec=True
+
+        if gen_both==True:
+            gen_table=True
+            gen_spec=True
         dfs = []
         for i in tqdm(self.all_files):
             df_i = self.gen_table(path=i)
@@ -132,8 +145,10 @@ class GenSpec:
             if gen_spec:
                 filename = os.path.basename(i)
                 self.gen_spectogram(df_i, name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=None)
-            dfs.append(df_i)
+            if gen_table:
+                dfs.append(df_i)
+        if gen_table:
+            res = pl.concat(dfs)
+            res.write_parquet(os.path.join(self.save_to, "dataframe.parquet"))
 
-        res = pl.concat(dfs)
-        res.write_parquet(os.path.join(self.save_to, "dataframe.parquet"))
-        return res
+        del df_i,dfs
