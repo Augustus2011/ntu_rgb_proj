@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import glob
 from tqdm import tqdm
 import math
-import gc
+import polars as pl
 
 class GenSpec:
     def __init__(self,path:str,save_to:str,drop_col=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
@@ -50,25 +50,27 @@ class GenSpec:
     def get_dis_angle_eachjoint(self, movement, hop_type: dict,hop:str):
         dis_from_hop = []
         angle_from_hop = []
-        max_frame = movement.iloc[len(movement) - 1, 4]
+        max_frame = movement['frame'].max()
+
         for frame in range(1, max_frame + 1):
-            movement_f = movement.loc[movement['frame'] == frame]
+            movement_f = movement.filter(movement['frame'] == frame)
             for i in range(1, 26):
                 hop_indices = hop_type.get(i)
                 if hop_indices is not None and len(hop_indices) > 0:
-                    x1, y1, z1 = movement.loc[i, ['x', 'y', 'z']]
-                    x2, y2, z2 = movement.loc[hop_indices[0], ['x', 'y', 'z']]
+                    joint_data = movement.filter(movement['joint'] == i)
+                    x1, y1, z1 = joint_data.select(['x', 'y', 'z']).to_numpy()[0]
+                    x2, y2, z2 = movement.filter(movement['joint'] == hop_indices[0]).select(['x', 'y', 'z']).to_numpy()[0]
                     res = self.get_two_dis(x1, y1, z1, x2, y2, z2)
                     res1 = self.get_two_angle(x1, y1, z1, x2, y2, z2)
                     dis_from_hop.append(res)
                     angle_from_hop.append(res1)
 
-        movement[f'dis_from_{hop}'] = dis_from_hop
-        movement[f'angle_from_{hop}'] = angle_from_hop
+        #new_col={f'dis_from_{hop}':dis_from_hop}
+        movement = movement.with_columns(pl.Series(f"dis_from_{hop}",dis_from_hop))
+        #new_col={f'angle_from_{hop}':angle_from_hop}
+        movement = movement.with_columns(pl.Series(f"angle_from_{hop}",angle_from_hop))
 
-
-        del dis_from_hop,angle_from_hop,res,res1,x1,y1,z1,x2,y2,z2
-        gc.collect()
+        del dis_from_hop,angle_from_hop,max_frame,movement_f,res,res1
 
         return movement
     
@@ -92,54 +94,46 @@ class GenSpec:
                 joint.append(j)
                 frames.append(f)
 
-        df_movement1=pd.DataFrame({'x':pos_x,'y':pos_y,'z':pos_z})
-        df_movement1['joint']=joint
-        df_movement1['frame']=frames
-        df_movement1['zone']=df_movement1['joint'].apply(lambda joint:self.get_zone(joint))
-        df_movement1['dis_from_00']=df_movement1.apply(lambda x:self.get_dis(x.x,x.y,x.z),axis=1)
+        df_movement1 = pl.DataFrame({
+            'frame': frames,
+            'joint': joint,
+            'x': pos_x,
+            'y': pos_y,
+            'z': pos_z
+            })
 
-        del joint,frames,VIDEO_
-        gc.collect()
-
-        last_df=self.get_dis_angle_eachjoint(df_movement1,hop_type=self.hop_1_dict,hop="hop1")
-        del joint,frames,VIDEO_,df_movement1
-        gc.collect()
-
+        # Add 'zone' column explicitly
+        df_movement1 = df_movement1.with_columns(pl.Series(name='zone',values=df_movement1['joint'].apply(lambda joint: self.get_zone(joint))))
+        df_movement1 = df_movement1.with_columns(df_movement1.map_rows(lambda row:self.get_dis(row[2], row[3], row[4])))
+        df_movement1= df_movement1.rename({"map": "dis_from_00"})
+        last_df = self.get_dis_angle_eachjoint(df_movement1, hop_type=self.hop_1_dict, hop="hop1")
         return last_df
 
-    def gen_spectogram(self,df,name_file_save_to,drop_col=None,dpi=56): #ex drop_col =["x","y","z"]
-        data_matrix = df.select_dtypes(include=[np.number]).values.T   #transpose to gen spectogram (time domain)
+    def gen_spectogram(self, df, name_file_save_to, drop_col=None, dpi=56):
         if drop_col is not None:
-            data_matrix = data_matrix.drop(axis=1,columns=drop_col)
+            df = df.drop(columns=drop_col)
+
+        df=df.drop("file_path")
+        data_matrix = df.to_numpy().T
 
         fig, ax = plt.subplots(figsize=(8, 8))
         im = ax.imshow(data_matrix, cmap='viridis', aspect='auto')
         ax.axis('off')
-        fig.set_size_inches(448 / dpi, 448 / dpi)  
+        fig.set_size_inches(448 / dpi, 448 / dpi)
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
-        
-        del data_matrix
-        gc.collect()
 
 
-    def run_all(self,exist_dataframe=None,gen_spec=None):
-        #gen spectogram and collect dataframes
-        count=0
-        for i in tqdm(self.all_files): # ex i='/Users/kunkerdthaisong/ipu/SampleSkeleton/S003C001P019R002A005.skeleton.npy'
-            if count==0:
-                res=self.gen_table(path=i)
-                if(gen_spec==True):
-                    self.gen_spectogram(res,name_file_save_to=self.save_to+i.split("/")[5]+".png",drop_col=None) #/Users/kunkerdthaisong/ipu/SampleSkeleton/ + "S003C001P019R002A005.skeleton.npy" +".png"
-                res["file_path"]=[i]*len(res)
-                count+=1
-            else:
-                res1=self.gen_table(path=i)
-                if(gen_spec==True):
-                    self.gen_spectogram(res,name_file_save_to=self.save_to+i.split("/")[5]+".png",drop_col=None)
-                res1["file_path"]=[i]*len(res1)
-                res=pd.concat([res,res1])
-                
-                del res1
-                gc.collect()
-        res.to_csv(self.save_to+"dataframe.csv")
+    def run_all(self, exist_dataframe=None, gen_spec=None):
+        # gen spectogram and collect dataframes
+        dfs = []
+        for i in tqdm(self.all_files):
+            df_i = self.gen_table(path=i)
+            df_i=df_i.with_columns(pl.Series("file_path",[i] * len(df_i)))
+            if gen_spec:
+                filename = os.path.basename(i)
+                self.gen_spectogram(df_i, name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=None)
+            dfs.append(df_i)
+
+        res = pl.concat(dfs)
+        res.write_parquet(os.path.join(self.save_to, "dataframe.parquet"))
         return res
