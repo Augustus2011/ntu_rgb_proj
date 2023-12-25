@@ -1,11 +1,10 @@
 # ntu_rgb_proj
 
-
-
-```bash
 #to gen spectogram you need to run
 
 pip install -r requirements.txt
+
+```bash
 
 change configs in ntu_rgb/genconfig.yaml
 
@@ -20,6 +19,11 @@ drop_col: None #example drop_col=["x","y","z"]  #all feature x,y,z,frame,joint,z
 gen_type: 0 #0:genboth, 1:gentable, 2:genspec, 3:gen_spec_from_exist_table
 
 ```
+
+```bash
+after that run python file run.py
+```
+
 
 ## members
 1.Worawit Tepsan
