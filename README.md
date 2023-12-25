@@ -1,7 +1,7 @@
 # ntu_rgb_proj
 ## my dataframe.parquet https://drive.google.com/file/d/1C0z6zbYpT_daiI1kLGHYe_VN3GyJKPZk/view?usp=share_link
 
-## my specto_gram.png https://drive.google.com/file/d/1lh-A5VL0d0re_DweEHCcwO5ENhcV0jXP/view?usp=share_link
+## my specto_gram.png in >>.zip https://drive.google.com/file/d/1lh-A5VL0d0re_DweEHCcwO5ENhcV0jXP/view?usp=share_link
 
 #to gen spectogram you need to run
 
