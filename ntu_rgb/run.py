@@ -1,7 +1,7 @@
 from gen_spec import GenSpec
 import os
 import yaml
-import shutil
+#import shutil
 
 CONFIG_PATH = "/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/"
 
@@ -26,4 +26,4 @@ shutil.make_archive(path_zip,format="zip")
 
 program = GenSpec(path=path, save_to=save_to, drop_col=drop_col, gen_type=gen_type)
 program.run_all()
-shutil.make_archive(path_zip,format="zip")
+#shutil.make_archive(path_zip,format="zip")
