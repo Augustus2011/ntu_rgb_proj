@@ -5,9 +5,10 @@ import glob
 from tqdm import tqdm
 import math
 import polars as pl
+import torch
 
 class GenSpec:
-    def __init__(self,path:str,save_to:str,drop_col=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
+    def __init__(self,path:str,save_to:str,drop_col=None,gen_type=0): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
         self.hop_1_dict = {}
         self.hop_1_pairs = [(24, 25), (25, 12), (12, 11), (11, 10), (10, 9),
                 (9, 21), (3, 4),(4,3),(21, 5),
@@ -17,6 +18,7 @@ class GenSpec:
                 (17, 18), (18, 19), (19, 20),(20,19)]
         
         self.zones={1:[25,24,12,11,10,9],2:[20,19,18,17],3:[16,15,14,13],4:[23,22,8,7,6,5],5:[1,2,21,3,4]}
+        self.gen_type=gen_type
 
         for start, end in self.hop_1_pairs:
             self.hop_1_dict.setdefault(start, []).append(end)
@@ -40,10 +42,15 @@ class GenSpec:
             try:
                 numerator = (x1 * x2) + (y1 * y2) + (z1 * z2)
                 res = numerator / denominator
-                res2 = math.acos(res) * (180 / math.pi)
-                return res2 
-            except:
-                print("math domain error")
+                res2 = torch.tanh(torch.tensor(res))
+                angle = math.acos(res2.item())
+                angle_degrees = math.degrees(angle)
+                return angle_degrees
+            
+            except Exception as e:
+                print(e)
+                print(numerator)
+                print(denominator)
                 return 0.00
         
     def get_zone(self,joint)->int:
@@ -119,7 +126,6 @@ class GenSpec:
 
         data_matrix=df.drop("file_path")
         data_matrix = data_matrix.to_numpy().T
-
         fig, ax = plt.subplots(figsize=(8, 8))
         im = ax.imshow(data_matrix, cmap='viridis', aspect='auto')
         del data_matrix
@@ -128,31 +134,32 @@ class GenSpec:
         fig.set_size_inches(448 / dpi, 448 / dpi)
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
-    def run_all(self, gen_type:int):
+    def run_all(self):
         # gen spectogram and collect dataframes
         gen_both=None
         gen_spec=None
         gen_table=None
 
-        if gen_type==0:
+        if self.gen_type==0:
             gen_both=True
 
-        elif gen_type==1:
+        elif self.gen_type==1:
             gen_table=True
 
-        elif gen_type==2:
+        elif self.gen_type==2:
             gen_spec=True
 
-        elif gen_both==True:
+        if gen_both==True:
             gen_table=True
             gen_spec=True
         dfs = []
-        for i in tqdm(self.all_files):
+        for i in tqdm(self.all_files[:2000]):
             df_i = self.gen_table(path=i)
             df_i=df_i.with_columns(pl.Series("file_path",[i] * len(df_i)))
+            
             if gen_spec:
                 filename = os.path.basename(i)
-                self.gen_spectogram(df_i, name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=None)
+                self.gen_spectogram(df_i, name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
             if gen_table:
                 dfs.append(df_i)
         if gen_table:
