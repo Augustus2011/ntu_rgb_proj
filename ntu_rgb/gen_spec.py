@@ -5,7 +5,7 @@ import glob
 from tqdm import tqdm
 import math
 import polars as pl
-import torch
+#import torch
 
 class GenSpec:
     def __init__(self, path:str=None, save_to:str=None, drop_col=None, gen_type:int=0, path_parquet:str=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
@@ -21,7 +21,7 @@ class GenSpec:
         self.gen_type=gen_type
         self.df=None
         if path_parquet is not None :
-            assert gen_type!=3, "gen_type should =3 if you want to genspec from exist parquet"
+            assert gen_type==3, "gen_type should =3 if you want to genspec from exist parquet"
             self.df=pl.read_parquet(path_parquet)  #parquet
 
         for start, end in self.hop_1_pairs:
@@ -154,8 +154,9 @@ class GenSpec:
             gen_spec=True
 
         elif self.gen_type==3:
-            filename = os.path.basename(i)
-            self.gen_spectogram(self.df, name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)    
+            for i in tqdm(self.df["file_path"].unique()):
+                filename = os.path.basename(i)
+                self.gen_spectogram(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)    
 
         if gen_both==True:
             gen_table=True
