@@ -8,7 +8,7 @@ import polars as pl
 #import torch
 
 class GenSpec:
-    def __init__(self, path:str=None, save_to:str=None, drop_col=None, gen_type:int=0, path_parquet:str=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
+    def __init__(self, path:str=None, save_to:str=None, drop_col=None, gen_type:int=0, path_parquet:str=None,feature_imp:bool=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
         self.hop_1_dict = {}
         self.hop_1_pairs = [(24, 25), (25, 12), (12, 11), (11, 10), (10, 9),
                 (9, 21), (3, 4),(4,3),(21, 5),
@@ -23,7 +23,10 @@ class GenSpec:
         if path_parquet is not None :
             assert gen_type==3, "gen_type should =3 if you want to genspec from exist parquet"
             self.df=pl.read_parquet(path_parquet)  #parquet
-
+            if feature_imp ==True: #to find feature importance
+                self.l=self.df["file_path"].unique().sort()[:30].to_list()
+                self.df=self.df.filter(pl.col("file_path").is_in(self.l))
+            
         for start, end in self.hop_1_pairs:
             self.hop_1_dict.setdefault(start, []).append(end)
 
@@ -156,16 +159,15 @@ class GenSpec:
         elif self.gen_type==3:
             for i in tqdm(self.df["file_path"].unique()):
                 filename = os.path.basename(i)
-                self.gen_spectogram(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)    
+                self.gen_spectogram(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
 
         if gen_both==True:
             gen_table=True
             gen_spec=True
 
-
         dfs = []
         
-        while (self.gen_table!=3):
+        while (self.gen_type!=3):
             for i in tqdm(self.all_files):
                 df_i = self.gen_table(path=i)
                 df_i=df_i.with_columns(pl.Series("file_path",[i] * len(df_i)))
