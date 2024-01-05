@@ -20,6 +20,7 @@ class GenSpec:
         self.zones={1:[25,24,12,11,10,9],2:[20,19,18,17],3:[16,15,14,13],4:[23,22,8,7,6,5],5:[1,2,21,3,4]}
         self.gen_type=gen_type
         self.df=None
+        self.path=path
         if path_parquet is not None :
             assert gen_type==3, "gen_type should =3 if you want to genspec from exist parquet"
             self.df=pl.read_parquet(path_parquet)  #parquet
@@ -30,7 +31,6 @@ class GenSpec:
         for start, end in self.hop_1_pairs:
             self.hop_1_dict.setdefault(start, []).append(end)
 
-        self.all_files = glob.glob(path+"*.npy", recursive=True)
         self.save_to=save_to
         self.drop_col=drop_col
 
@@ -168,6 +168,8 @@ class GenSpec:
         dfs = []
         
         while (self.gen_type!=3):
+            self.all_files = glob.glob(self.path+"*.npy", recursive=True)
+
             for i in tqdm(self.all_files):
                 df_i = self.gen_table(path=i)
                 df_i=df_i.with_columns(pl.Series("file_path",[i] * len(df_i)))

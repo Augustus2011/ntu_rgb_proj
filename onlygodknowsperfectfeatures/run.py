@@ -17,13 +17,14 @@ def load_config(config_name):
 config = load_config("config.yaml")
 
 path=config["path_npy_skeleton"] #"/Users/kunkerdthaisong/ipu/ntu_rgb_proj/SampleSkeleton/"
-save_to=config["save_to"] #"/Users/kunkerdthaisong/ipu/ntu_rgb_proj/spec/"
 drop_col=config["drop_col"]  #defualt=None
 gen_type=config["gen_type"] #0
-path_parquet=config["path_parquet"] #path of .parquet
 feature_imp=config["feature_imp"] #True or False
+save_parquet_to=config["save_parquet_to"]
+save_img_to=config["save_img_to"]
 
-randomgen_feature(df=,list_operator=["+","-","*","/"])
-program = GenSpec(path=path, save_to=save_to, drop_col=drop_col, gen_type=gen_type, path_parquet=path_parquet, feature_imp=feature_imp)
+
+randomgen_feature(df=,list_operator=["+","-","*","/"],save_parquet_to=save_parquet_to, save_img_to=save_img_to)
+program = GenSpec(path=path,drop_col=drop_col, gen_type=gen_type, feature_imp=feature_imp)
 program.run_all()
 #shutil.make_archive(path_zip,format="zip")
