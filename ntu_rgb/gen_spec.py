@@ -5,7 +5,7 @@ import glob
 from tqdm import tqdm
 import math
 import polars as pl
-#import torch
+import torch
 
 class GenSpec:
     def __init__(self, path:str=None, save_to:str=None, drop_col=None, gen_type:int=0, path_parquet:str=None,feature_imp:bool=None): #ex  'path=/Users/kunkerdthaisong/ipu/SampleSkeleton/', 'path=/Users/kunkerdthaisong/ipu/'
@@ -87,7 +87,6 @@ class GenSpec:
         movement = movement.with_columns(pl.Series(f"dis_from_{hop}",dis_from_hop))
         #new_col={f'angle_from_{hop}':angle_from_hop}
         movement = movement.with_columns(pl.Series(f"angle_from_{hop}",angle_from_hop))
-
         del dis_from_hop,angle_from_hop,max_frame,movement_f,res,res1
 
         return movement
