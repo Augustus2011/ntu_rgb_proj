@@ -3,7 +3,7 @@
 
 ## my specto_gram.png in >>.zip https://drive.google.com/file/d/1lh-A5VL0d0re_DweEHCcwO5ENhcV0jXP/view?usp=share_link
 
-#to gen spectogram you need to run
+# to gen spectogram you need to run
 
 ```bash
 pip install -r requirements.txt
