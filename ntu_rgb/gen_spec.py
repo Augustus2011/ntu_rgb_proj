@@ -156,6 +156,7 @@ class GenSpec:
             gen_spec=True
 
         elif self.gen_type==3:
+            self.df=self.df.filter(pl.col("joint").is_in([11,7,19,15]))
             for i in tqdm(self.df["file_path"].unique()):
                 filename = os.path.basename(i)
                 self.gen_spectogram(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
