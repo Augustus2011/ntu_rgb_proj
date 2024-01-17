@@ -4,10 +4,9 @@ from tqdm import tqdm
 
 
 class Autoencoders:
-    def __init__(self,img_size:int,save_to:str,model:str):
+    def __init__(self,img_size:int,save_to:str):
         self.img_size=img_size
         self.save_to=save_to
-        self.model=model
         
     class Simple_autoencoder(nn.Module):
         def __init__(self):
