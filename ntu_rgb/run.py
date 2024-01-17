@@ -1,18 +1,9 @@
 from gen_spec import GenSpec
 import os
 import yaml
-#import shutil
+from ../utils.read_yaml import load_config
 
 CONFIG_PATH = "/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/"
-
-
-# Function to load yaml configuration file
-def load_config(config_name):
-    with open(os.path.join(CONFIG_PATH, config_name)) as file:
-        config = yaml.safe_load(file)
-
-    return config
-
 config = load_config("genconfig.yaml")
 
 
