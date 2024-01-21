@@ -1,4 +1,9 @@
 # ntu_rgb_proj
+
+## ex
+![](https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/a7_throw.gif)
+
+
 ## my dataframe.parquet https://drive.google.com/file/d/1C0z6zbYpT_daiI1kLGHYe_VN3GyJKPZk/view?usp=share_link
 
 ## my specto_gram.png in >>.zip https://drive.google.com/file/d/1lh-A5VL0d0re_DweEHCcwO5ENhcV0jXP/view?usp=share_link
