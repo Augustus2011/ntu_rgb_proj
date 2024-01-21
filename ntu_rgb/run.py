@@ -4,7 +4,7 @@ import yaml
 from ..utils.read_yaml import load_config
 
 CONFIG_PATH = "/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/"
-config = load_config("genconfig.yaml")
+config = load_config(CONFIG_PATH,"genconfig.yaml")
 
 
 path=config["path_npy_skeleton"] #"/Users/kunkerdthaisong/ipu/ntu_rgb_proj/SampleSkeleton/"

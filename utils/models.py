@@ -12,14 +12,16 @@ class Autoencoders:
         def __init__(self):
             super(Autoencoders.Simple_autoencoder, self).__init__()
 
-            self.encoder = nn.Sequential(
+            self.encoder = nn.Sequential([
                 nn.Conv2d(3,32, kernel_size=3, padding=1),
                 nn.Conv2d(32,64, kernel_size=3, padding=1),
+            ]
             )
 
-            self.decoder = nn.Sequential(
+            self.decoder = nn.Sequential([
                 nn.ConvTranspose2d(64,32, kernel_size=3, stride=2, padding=1, output_padding=1),
                 nn.ConvTranspose2d(32, 3, kernel_size=3, stride=2, padding=1, output_padding=1),
+            ]
             )
 
         def forward(self, x):

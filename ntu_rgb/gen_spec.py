@@ -165,7 +165,7 @@ class GenSpec:
             gen_table=True
             gen_spec=True
 
-        dfs = []
+        dfs =[]
         
         while (self.gen_type!=3):
             self.all_files = glob.glob(self.path+"*.npy", recursive=True)
