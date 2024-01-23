@@ -30,7 +30,7 @@ after that run python file run.py
 ## members
 1.Worawit Tepsan
 <a href='https://github.com/PitiwatL'> 2.Pitiwat Lueangwitchajaroen <a/>
-3.Kun kerdthausing
+3.Kun kerdthaisong
 
 ## advisors
 1.Sitapa Watcharapinchai
