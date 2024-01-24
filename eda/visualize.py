@@ -11,8 +11,8 @@ max_f = action[len(action) - 1]["frame"].item()
 
 
 fig, ax = plt.subplots()
-ax.set_xlim(-2, 2)
-ax.set_ylim(-2, 2)
+ax.set_xlim(-1, 1)
+ax.set_ylim(-1, 1)
 
 
 skeleton_connections = [
