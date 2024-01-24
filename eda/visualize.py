@@ -6,11 +6,15 @@ from matplotlib.animation import FuncAnimation
 import polars as pl
 
 df = pl.read_parquet("/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/30actions_10class.parquet")
-action = df.filter(pl.col("file_path") == df["file_path"].unique(maintain_order=True)[6])
+action = df.filter(pl.col("file_path") == df["file_path"].unique(maintain_order=True)[19])
 max_f = action[len(action) - 1]["frame"].item()
 
+file_path=df["file_path"].unique(maintain_order=True)[10]
+
+title_action=f"2nd_a10_clapping"
 
 fig, ax = plt.subplots()
+fig.suptitle(title_action)
 ax.set_xlim(-1, 1)
 ax.set_ylim(-1, 1)
 
@@ -47,6 +51,6 @@ def update(frame):
 
 
 animation = FuncAnimation(fig, update, frames=max_f, interval=100)
-video_filename ="a7_throw.gif"
+video_filename =title_action+".gif"
 animation.save(video_filename, dpi=300) #save to .gif
 plt.show()
