@@ -1,7 +1,7 @@
 # ntu_rgb_proj
 
-## ex
-![](https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/a7_throw.gif)
+## actions
+<img text="a07 throw" src="https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/a7_throw.gif" width="250" height="250"/>
 
 
 ## my dataframe.parquet https://drive.google.com/file/d/1C0z6zbYpT_daiI1kLGHYe_VN3GyJKPZk/view?usp=share_link
