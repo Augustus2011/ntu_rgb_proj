@@ -1,5 +1,5 @@
 
-#visualize 2d 25joint
+#visualize 2d 25joint and save
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
@@ -48,5 +48,5 @@ def update(frame):
 
 animation = FuncAnimation(fig, update, frames=max_f, interval=100)
 video_filename ="a7_throw.gif"
-animation.save(video_filename, dpi=300)
+animation.save(video_filename, dpi=300) #save to .gif
 plt.show()
