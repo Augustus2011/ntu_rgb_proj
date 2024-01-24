@@ -1,3 +1,5 @@
+
+#visualize 2d 25joint
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
