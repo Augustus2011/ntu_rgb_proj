@@ -21,11 +21,31 @@ class GenSpec:
         self.gen_type=gen_type
         self.df=None
         self.path=path
+        self.path_l=glob.glob(self.path+"*.npy")
+        self.path_l=sorted(self.path_l)
+
+        #filter self.path #in this case only use class 50-60
+        #this
+        self.class_l=[]
+        for i in self.path_l:
+            #print(i.split("A")[1])
+            self.class_l.append(i.split("A")[1]) #Skeleton_Coordinate/raw_npy1TO60/S015C002P008R001A018.skeleton.npy'# to get 018.skeleton.npy
+        self.unique_class_l=set(self.class_l)
+        self.unique_class_l=sorted(self.unique_class_l)
+        self.two_p_class=list(self.unique_class_l)[49:]
+        two_p_class_paths=[]
+        for i in self.path_l:
+            for c in self.two_p_class:
+                if c in i:
+                    two_p_class_paths.append(i)
+        self.path_l=two_p_class_paths
+        #to this
+        
         if path_parquet is not None :
             assert gen_type==3, "gen_type should =3 if you want to genspec from exist parquet"
             self.df=pl.read_parquet(path_parquet)  #parquet
             if feature_imp ==True: #to find feature importance
-                self.l=self.df["file_path"].unique().sort()[:30].to_list()
+                self.l=self.df["file_path"].unique().sort()[:30].to_list() #select only first 30 actions
                 self.df=self.df.filter(pl.col("file_path").is_in(self.l))
             
         for start, end in self.hop_1_pairs:
@@ -36,7 +56,9 @@ class GenSpec:
 
 
     def get_dis(self, x, y, z) -> float:
-        return math.sqrt(x**2 + y**2 + z**2)
+        #threshold
+        self.x2,self.y2,self.z2=0,0,0 #where to set sensor
+        return math.sqrt((x-self.x2)**2 +(y-self.y2)**2 + (z-self.z2)**2)
 
     def get_two_dis(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x1 - x2)**2 + (y1 - y2)**2 + (z1 - z2)**2)
@@ -69,7 +91,6 @@ class GenSpec:
         dis_from_hop = []
         angle_from_hop = []
         max_frame = movement['frame'].max()
-
         for frame in range(1, max_frame + 1):
             movement_f = movement.filter(movement['frame'] == frame)
             for i in range(1, 26):
@@ -93,7 +114,8 @@ class GenSpec:
     
 
     def gen_table(self,path):#gen_feature
-        VIDEO_ = np.load(path, mmap_mode=None, allow_pickle=True)
+        #gentable for skel_body2
+        VIDEO_ = np.load(path, mmap_mode=None, allow_pickle=True)    
         shape0, shape1, shape2 = VIDEO_.tolist()['skel_body0'].shape   #shape0==numbe_of_frame ,shape1==3(x,y,z) ,shape2==1
         movement1 = VIDEO_.tolist()['skel_body0'].reshape(1, shape0, shape1, shape2, 1)
         pos_x,pos_y,pos_z=[],[],[]
@@ -112,19 +134,51 @@ class GenSpec:
                 frames.append(f)
 
         df_movement1 = pl.DataFrame({
-            'frame': frames,
-            'joint': joint,
-            'x': pos_x,
-            'y': pos_y,
-            'z': pos_z
-            })
+                'frame': frames,
+                'joint': joint,
+                'skel_body':[0]*len(frames),
+                'x': pos_x,
+                'y': pos_y,
+                'z': pos_z
+                })
+        
+        del shape0,shape1,shape2,movement1,pos_x,pos_y,pos_z,joint,frames,f,j
 
-        # Add 'zone' column 
-        df_movement1 = df_movement1.with_columns(pl.Series(name='zone',values=df_movement1['joint'].apply(lambda joint: self.get_zone(joint))))
-        df_movement1 = df_movement1.with_columns(df_movement1.map_rows(lambda row:self.get_dis(row[2], row[3], row[4])))
+        if VIDEO_.tolist()['nbodys'][0]==2: #gentable for skel_body1
+            shape0, shape1, shape2 = VIDEO_.tolist()['skel_body1'].shape   #shape0==numbe_of_frame ,shape1==3(x,y,z) ,shape2==1
+            movement1 = VIDEO_.tolist()['skel_body1'].reshape(1, shape0, shape1, shape2, 1)
+            pos_x,pos_y,pos_z=[],[],[]
+            joint=[]
+            frames=[]
+            f=0
+            for frame in movement1[0]:#1 frame (25,3,1) , each movement specific frames
+                j=0
+                f=f+1
+                for x,y,z in frame: #position
+                    pos_x.append(x[0])
+                    pos_y.append(y[0])
+                    pos_z.append(z[0])
+                    j=j+1
+                    joint.append(j)
+                    frames.append(f)
+
+            df_movement1_skel1 = pl.DataFrame({
+                    'frame': frames,
+                    'joint': joint,
+                    'skel_body':[1]*len(frames),
+                    'x': pos_x,
+                    'y': pos_y,
+                    'z': pos_z
+                    })
+            self.l=[df_movement1,df_movement1_skel1]
+            df_movement1=pl.concat(self.l)
+            del self.l
+        
+        #df_movement1 = df_movement1.with_columns(pl.Series(name='zone',values=df_movement1['joint'].apply(lambda joint: self.get_zone(joint)))) # Add 'zone' column 
+        df_movement1 = df_movement1.with_columns(df_movement1.map_rows(lambda row:self.get_dis(row[3], row[4], row[5]))) #get distance
         df_movement1= df_movement1.rename({"map": "dis_from_00"})
-        last_df = self.get_dis_angle_eachjoint(df_movement1, hop_type=self.hop_1_dict, hop="hop1")
-        return last_df
+        #last_df = self.get_dis_angle_eachjoint(df_movement1, hop_type=self.hop_1_dict, hop="hop1") #get angle
+        return df_movement1
 
     def gen_spectogram(self, df, name_file_save_to, drop_col=None, dpi=56):
         if drop_col is not None:
@@ -141,7 +195,7 @@ class GenSpec:
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
     def run_all(self):
-        # gen spectogram and collect dataframes
+        
         gen_both=None
         gen_spec=None
         gen_table=None
@@ -168,9 +222,7 @@ class GenSpec:
         dfs =[]
         
         while (self.gen_type!=3):
-            self.all_files = glob.glob(self.path+"*.npy", recursive=True)
-
-            for i in tqdm(self.all_files):
+            for i in tqdm(self.path_l):
                 df_i = self.gen_table(path=i)
                 df_i=df_i.with_columns(pl.Series("file_path",[i] * len(df_i)))
                 
@@ -181,7 +233,7 @@ class GenSpec:
                     dfs.append(df_i)
             if gen_table:
                 res = pl.concat(dfs)
-                res.write_parquet(os.path.join(self.save_to, "dataframe.parquet"))
+                res.write_parquet(os.path.join(self.save_to, "two_person_dataframe.parquet"))
 
             del df_i,dfs
             break

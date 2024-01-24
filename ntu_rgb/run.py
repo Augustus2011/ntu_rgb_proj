@@ -1,7 +1,7 @@
+import sys
+sys.path.append('/Users/kunkerdthaisong/ipu/ntu_rgb_proj/') #make util readable
+from utils.read_yaml import load_config
 from gen_spec import GenSpec
-import os
-import yaml
-from ..utils.read_yaml import load_config
 
 CONFIG_PATH = "/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/"
 config = load_config(CONFIG_PATH,"genconfig.yaml")
@@ -9,8 +9,8 @@ config = load_config(CONFIG_PATH,"genconfig.yaml")
 
 path=config["path_npy_skeleton"] #"/Users/kunkerdthaisong/ipu/ntu_rgb_proj/SampleSkeleton/"
 save_to=config["save_to"] #"/Users/kunkerdthaisong/ipu/ntu_rgb_proj/spec/"
-drop_col=config["drop_col"]  #defualt=None
-gen_type=config["gen_type"] #0
+drop_col=config["drop_col"]  #defualt=None or ['']
+gen_type=config["gen_type"] #0,1,2,3
 path_parquet=config["path_parquet"] #path of .parquet
 feature_imp=config["feature_imp"] #True or False
 
