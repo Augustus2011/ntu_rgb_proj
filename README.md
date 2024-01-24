@@ -1,8 +1,8 @@
 # ntu_rgb_proj
 
 ## actions
-<img alt="a07 throw" src="https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/a7_throw.gif" width="250" height="250"/>
-<img alt="a07 throw2" src="https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/a7_throw.gif" width="250" height="250"/>
+<img src="https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/ex_animation/2nd_a07_throw.gif" width="250" height="250"/>
+<img src="https://github.com/Augustus2011/ntu_rgb_proj/blob/v2/ex_animation/2nd_a01_drinkwater.gif" width="250" height="250"/>
 
 
 ## my dataframe.parquet https://drive.google.com/file/d/1C0z6zbYpT_daiI1kLGHYe_VN3GyJKPZk/view?usp=share_link
