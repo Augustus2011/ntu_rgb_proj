@@ -1,17 +1,18 @@
 
-#visualize 2d 25joint and save
+#visualize 2d 25joint and save .gif
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from matplotlib.animation import FuncAnimation
 import polars as pl
+import os
 
-df = pl.read_parquet("/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/30actions_10class.parquet")
-action = df.filter(pl.col("file_path") == df["file_path"].unique(maintain_order=True)[19])
+df = pl.read_parquet("/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/two_person_30actions_10class.parquet")
+action = df.filter(pl.col("file_path") == df["file_path"].unique(maintain_order=True)[2])
 max_f = action[len(action) - 1]["frame"].item()
+output_dir="/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ex_animation"
+#file_path=df["file_path"].unique(maintain_order=True)[10]
 
-file_path=df["file_path"].unique(maintain_order=True)[10]
-
-title_action=f"2nd_a10_clapping"
+title_action="2p_a53_pushing"
 
 fig, ax = plt.subplots()
 fig.suptitle(title_action)
@@ -29,28 +30,15 @@ skeleton_connections = [
 
 def update(frame):
     ax.clear()
-    ax.set_xlim(-1, 1)
+    ax.set_xlim(-3, 3)
     ax.set_ylim(-1, 1)
 
     positions = action.filter(pl.col("frame") == frame)[["x", "y"]]
     ax.scatter(positions['x'], positions['y'], c='r', marker='o')
 
 
-#for connection in skeleton_connections:
-    #joint1 = connection[0]
-   # joint2 = connection[1]
-  #  x_values = []
- #   y_values = []
-#
-    #for i in range(1, max_f + 1):
-   #     positions = action.filter(pl.col("frame") == i)[["x", "y"]]
-  #      x_values.extend([positions['x'][joint1 - 1], positions['x'][joint2 - 1], None])
- #       y_values.extend([positions['y'][joint1 - 1], positions['y'][joint2 - 1], None])
-#
-   # ax.plot(x_values, y_values, c='b')
-
-
+title_action=title_action.replace("/",".")
 animation = FuncAnimation(fig, update, frames=max_f, interval=100)
-video_filename =title_action+".gif"
-animation.save(video_filename, dpi=300) #save to .gif
+video_filename =os.path.join(output_dir,f"{title_action}.gif")
+animation.save(filename=video_filename, dpi=300) #save to .gif
 plt.show()
