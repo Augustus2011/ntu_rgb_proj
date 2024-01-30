@@ -1,6 +1,6 @@
 #initial settings
 
-path_npy_skeleton: /Users/kunkerdthaisong/Downloads/skeletons20class_sampling/data/project/proj0173-action/Skeleton_Coordinate/raw_npy1TO60/ #ex:/Users/kunkerdthaisong/ipu/ntu_rgb_proj/SampleSkeleton/    
+path_npy_skeleton: /Users/kunkerdthaisong/Downloads/SampleSkeleton/ #ex:/Users/kunkerdthaisong/ipu/ntu_rgb_proj/SampleSkeleton/    
 save_to: /Users/kunkerdthaisong/ipu/ntu_rgb_proj/spec/
 drop_col: ["joint","frame","zone"] #example drop_col=["x","y","z"]  #all feature x,y,z,frame,joint,zone,dis_from_00,dis_from_hop1,angle_from_hop1
 

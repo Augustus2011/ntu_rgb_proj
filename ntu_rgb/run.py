@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/Users/kunkerdthaisong/ipu/ntu_rgb_proj/') #make util readable
+sys.path.append('/Users/kunkerdthaisong/ipu/ntu_rgb_proj/') #make util importable
 from utils.read_yaml import load_config
 from gen_spec import GenSpec
 

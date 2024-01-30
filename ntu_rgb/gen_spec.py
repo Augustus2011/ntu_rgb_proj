@@ -23,22 +23,24 @@ class GenSpec:
         self.path=path
         self.path_l=glob.glob(self.path+"*.npy")
         self.path_l=sorted(self.path_l)
+        self.save_to=save_to
+        self.drop_col=drop_col
 
         #filter self.path #in this case only use class 50-60
         #this
-        self.class_l=[]
-        for i in self.path_l:
-            #print(i.split("A")[1])
-            self.class_l.append(i.split("A")[1]) #Skeleton_Coordinate/raw_npy1TO60/S015C002P008R001A018.skeleton.npy'# to get 018.skeleton.npy
-        self.unique_class_l=set(self.class_l)
-        self.unique_class_l=sorted(self.unique_class_l)
-        self.two_p_class=list(self.unique_class_l)[49:]
-        two_p_class_paths=[]
-        for i in self.path_l:
-            for c in self.two_p_class:
-                if c in i:
-                    two_p_class_paths.append(i)
-        self.path_l=two_p_class_paths
+        #self.class_l=[]
+        #for i in self.path_l:
+            
+        #    self.class_l.append(i.split("A")[1]) #Skeleton_Coordinate/raw_npy1TO60/S015C002P008R001A018.skeleton.npy'# to get 018.skeleton.npy
+        #self.unique_class_l=set(self.class_l)
+        #self.unique_class_l=sorted(self.unique_class_l)
+        #self.two_p_class=list(self.unique_class_l)[49:]
+        #two_p_class_paths=[]
+        #for i in self.path_l:
+        #    for c in self.two_p_class:
+        #        if c in i:
+        #            two_p_class_paths.append(i)
+        #self.path_l=two_p_class_paths
         #to this
         
         if path_parquet is not None :
@@ -51,13 +53,12 @@ class GenSpec:
         for start, end in self.hop_1_pairs:
             self.hop_1_dict.setdefault(start, []).append(end)
 
-        self.save_to=save_to
-        self.drop_col=drop_col
+        
 
 
     def get_dis(self, x, y, z) -> float:
         #threshold
-        self.x2,self.y2,self.z2=0,0,0 #where to set sensor
+        self.x2,self.y2,self.z2=0,-0.42,3.2 #where to set sensor
         return math.sqrt((x-self.x2)**2 +(y-self.y2)**2 + (z-self.z2)**2)
 
     def get_two_dis(self, x1, y1, z1, x2, y2, z2) -> float:
@@ -176,7 +177,7 @@ class GenSpec:
         
         #df_movement1 = df_movement1.with_columns(pl.Series(name='zone',values=df_movement1['joint'].apply(lambda joint: self.get_zone(joint)))) # Add 'zone' column 
         df_movement1 = df_movement1.with_columns(df_movement1.map_rows(lambda row:self.get_dis(row[3], row[4], row[5]))) #get distance
-        df_movement1= df_movement1.rename({"map": "dis_from_00"})
+        df_movement1= df_movement1.rename({"map": "dis_from_sensor"})
         #last_df = self.get_dis_angle_eachjoint(df_movement1, hop_type=self.hop_1_dict, hop="hop1") #get angle
         return df_movement1
 
@@ -220,7 +221,6 @@ class GenSpec:
             gen_spec=True
 
         dfs =[]
-        
         while (self.gen_type!=3):
             for i in tqdm(self.path_l):
                 df_i = self.gen_table(path=i)
@@ -233,7 +233,7 @@ class GenSpec:
                     dfs.append(df_i)
             if gen_table:
                 res = pl.concat(dfs)
-                res.write_parquet(os.path.join(self.save_to, "two_person_dataframe.parquet"))
+                res.write_parquet(os.path.join(self.save_to, "one_person_dataframe.parquet"))
 
             del df_i,dfs
             break

@@ -8,7 +8,11 @@ import os
 
 df = pl.read_parquet("/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/two_person_30actions_10class.parquet")
 action = df.filter(pl.col("file_path") == df["file_path"].unique(maintain_order=True)[2])
+
+if "skel_body" in action.columns:
+    action = action.filter(pl.col("skel_body") ==1)
 max_f = action[len(action) - 1]["frame"].item()
+
 output_dir="/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ex_animation"
 #file_path=df["file_path"].unique(maintain_order=True)[10]
 
@@ -40,5 +44,5 @@ def update(frame):
 title_action=title_action.replace("/",".")
 animation = FuncAnimation(fig, update, frames=max_f, interval=100)
 video_filename =os.path.join(output_dir,f"{title_action}.gif")
-animation.save(filename=video_filename, dpi=300) #save to .gif
+#animation.save(filename=video_filename, dpi=300) #save to .gif
 plt.show()
