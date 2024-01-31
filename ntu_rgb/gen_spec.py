@@ -211,6 +211,15 @@ class GenSpec:
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
     def gen_spectogram2(self,df:pl.DataFrame,drop_col=None): #df only have [4,16,20,22,24]
+        def get_velocity(df:pl.DataFrame)->np.ndarray:
+            yo=[]
+            i=0
+            while(i<len(df)-1):
+                dis=abs(df["dis_from_sensor"][i]-df["dis_from_sensor"][i+1])
+                yo.append(dis)
+                i+=1
+            return np.array(yo)
+        
         prev=0
         n=0
         while prev!=self.lin_filter(df,prev):
@@ -218,11 +227,18 @@ class GenSpec:
             #print(prev,ns,ns-prev)
             action=df[prev:ns]
             filename=os.path.basename(action["filename_n_class"][(prev+ns)//2])
-            action_4=action.filter(pl.col("joint")==4)# head
-            action_16=action.filter(pl.col("joint")==16)#left foot
-            action_20=action.filter(pl.col("joint")==20)#right foot
-            action_22=action.filter(pl.col("joint")==22)#left hand
-            action_24=action.filter(pl.col("joint")==24)#right hand
+            action_j4=action.filter(pl.col("joint")==4)# head
+            action_j16=action.filter(pl.col("joint")==16)#left foot
+            action_j20=action.filter(pl.col("joint")==20)#right foot
+            action_j22=action.filter(pl.col("joint")==22)#left hand
+            action_j24=action.filter(pl.col("joint")==24)#right hand
+            
+            constant=2*3*(10**8)/((1.6)*10**9) # but 2 f_d=(-2*v*lambda),lambda=c_light/f_sensor
+            v_a_j4=get_velocity(action_j4)*constant
+            v_a_j16=get_velocity(action_j16)*constant
+            v_a_j20=get_velocity(action_j20)*constant
+            v_a_j22=get_velocity(action_j22)*constant
+            v_a_j24=get_velocity(action_j24)*constant
             
 
             os.path.join(self.save_to, f"{filename}.png")
