@@ -54,6 +54,21 @@ class GenSpec:
             self.hop_1_dict.setdefault(start, []).append(end)
 
         
+    def lin_filter(self,df:pl.DataFrame,start:int)->int: #df should be sorted by filename_n_class
+        for i,j in enumerate(df["filename_n_class"][start:]):
+            if(df["filename_n_class"][start]!=j):
+                start=start+i
+                break
+        return start
+    
+    def get_33_action(self,df:pl.DataFrame,start:int): #df should be sorted by filename_n_class #ex a50-a60 *3
+        n=0
+        prv_ns=0
+        while(n<33):
+            ns=self.lin_filter(df,prv_ns)
+            n+=1
+            prv_ns=ns
+        return df[:ns]
 
 
     def get_dis(self, x, y, z) -> float:
@@ -195,6 +210,9 @@ class GenSpec:
         fig.set_size_inches(448 / dpi, 448 / dpi)
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
+    def gen_spectogram2(self,df,name_file_save_to,drop_col=None):
+        
+
     def run_all(self):
         
         gen_both=None
@@ -211,10 +229,15 @@ class GenSpec:
             gen_spec=True
 
         elif self.gen_type==3:
-            self.df=self.df.filter(pl.col("joint").is_in([11,7,19,15]))
-            for i in tqdm(self.df["file_path"].unique()):
-                filename = os.path.basename(i)
-                self.gen_spectogram(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
+            self.df=self.df.filter(pl.col("joint").is_in([4,16,20,22,24])) #use only head,left hand,left foot, right hand, right foot
+            l_df=len(self.df) #int
+            if len(self.df["skel_body"].unique())>1:
+                pass    
+                
+            else:   
+                for i in tqdm(self.df["file_path"].unique(maintain_order=True)):
+                    filename = os.path.basename(i)
+                    self.gen_spectogram2(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
 
         if gen_both==True:
             gen_table=True

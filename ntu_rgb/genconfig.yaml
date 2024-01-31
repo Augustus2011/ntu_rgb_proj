@@ -5,6 +5,6 @@ save_to: /Users/kunkerdthaisong/ipu/ntu_rgb_proj/spec/
 drop_col: ["joint","frame","zone"] #example drop_col=["x","y","z"]  #all feature x,y,z,frame,joint,zone,dis_from_00,dis_from_hop1,angle_from_hop1
 
 
-gen_type: 1 #0:genboth, 1:gentable, 2:genspec, 3:gen_spec_from_exist_table
+gen_type: 3 #0:genboth, 1:gentable, 2:genspec, 3:gen_spec_from_exist_table
 path_parquet: #/Users/kunkerdthaisong/ipu/ntu_rgb_proj/ntu_rgb/30actions_10class.parquet #/Users/kunkerdthaisong/Downloads/dataframe.parquet
 feature_imp: False #defualt is False
