@@ -196,7 +196,7 @@ class GenSpec:
         #last_df = self.get_dis_angle_eachjoint(df_movement1, hop_type=self.hop_1_dict, hop="hop1") #get angle
         return df_movement1
 
-    def gen_spectogram(self, df, name_file_save_to, drop_col=None, dpi=56):
+    def gen_spectogram(self, df:pl.DataFrame, name_file_save_to:str, drop_col=None, dpi=56):
         if drop_col is not None:
             df = df.drop(columns=drop_col)
 
@@ -210,11 +210,28 @@ class GenSpec:
         fig.set_size_inches(448 / dpi, 448 / dpi)
         fig.savefig(name_file_save_to, bbox_inches='tight', pad_inches=0, dpi=dpi)
 
-    def gen_spectogram2(self,df,name_file_save_to,drop_col=None):
-        
+    def gen_spectogram2(self,df:pl.DataFrame,drop_col=None): #df only have [4,16,20,22,24]
+        prev=0
+        n=0
+        while prev!=self.lin_filter(df,prev):
+            ns=self.lin_filter(df,prev)
+            #print(prev,ns,ns-prev)
+            action=df[prev:ns]
+            filename=os.path.basename(action["filename_n_class"][(prev+ns)//2])
+            action_4=action.filter(pl.col("joint")==4)# head
+            action_16=action.filter(pl.col("joint")==16)#left foot
+            action_20=action.filter(pl.col("joint")==20)#right foot
+            action_22=action.filter(pl.col("joint")==22)#left hand
+            action_24=action.filter(pl.col("joint")==24)#right hand
+            
+
+            os.path.join(self.save_to, f"{filename}.png")
+            #get velocity from dis_from_sensor
+            
+            
+            prev=ns
 
     def run_all(self):
-        
         gen_both=None
         gen_spec=None
         gen_table=None
@@ -232,12 +249,13 @@ class GenSpec:
             self.df=self.df.filter(pl.col("joint").is_in([4,16,20,22,24])) #use only head,left hand,left foot, right hand, right foot
             l_df=len(self.df) #int
             if len(self.df["skel_body"].unique())>1:
-                pass    
+                self.gen_spectogram2()
                 
             else:   
                 for i in tqdm(self.df["file_path"].unique(maintain_order=True)):
                     filename = os.path.basename(i)
-                    self.gen_spectogram2(self.df.filter(pl.col("file_path") == i),name_file_save_to=os.path.join(self.save_to, f"{filename}.png"), drop_col=self.drop_col)
+                    self.gen_spectogram2(self.df.filter(pl.col("file_path") == i), drop_col=self.drop_col)
+                pass
 
         if gen_both==True:
             gen_table=True
