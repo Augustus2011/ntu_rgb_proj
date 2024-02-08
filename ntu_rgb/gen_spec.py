@@ -240,7 +240,6 @@ class GenSpec:
             v_a_j22=get_velocity(action_j22)*constant
             v_a_j24=get_velocity(action_j24)*constant
             
-
             os.path.join(self.save_to, f"{filename}.png")
             #get velocity from dis_from_sensor
             
